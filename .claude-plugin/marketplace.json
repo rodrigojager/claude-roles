@@ -1,0 +1,13 @@
+{
+  "name": "claude-roles",
+  "description": "Professional roles (personas) for Claude Code",
+  "owner": {
+    "name": "rodrigojager"
+  },
+  "plugins": [
+    {
+      "name": "roles",
+      "source": "./"
+    }
+  ]
+}

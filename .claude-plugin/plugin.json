@@ -1,0 +1,11 @@
+{
+  "name": "roles",
+  "version": "0.1.0",
+  "description": "Professional roles for Claude Code: a searchable /role picker, the role in every prompt, --role for subagents, and a HUD badge",
+  "author": { "name": "rodrigojager", "url": "https://github.com/rodrigojager" },
+  "homepage": "https://github.com/rodrigojager/claude-roles",
+  "repository": "https://github.com/rodrigojager/claude-roles",
+  "license": "MIT",
+  "keywords": ["roles", "personas", "subagents", "agency-agents"],
+  "types": "./types/index.d.ts"
+}
