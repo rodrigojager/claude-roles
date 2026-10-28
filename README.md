@@ -80,31 +80,50 @@ reserved). Catalogs are read in this order, the first one with an id winning:
 
 Subfolders are categories when the frontmatter has none.
 
-## Role in the status line (optional)
+## Role on screen
 
-`statusline/statusline.mjs` wraps [claude-hud](https://github.com/jarrodwatts/claude-hud)
-and puts the role right after the model: ` Role: Root Cause Debugger ` in
-`#6ee7dc` on `#29213d` while one is active, a dim `Role: default` otherwise. It
-also reports model, effort and role to the Herdr terminal multiplexer's
-`$model_info` token when it runs inside Herdr.
+While a role is active the plugin draws ` Role: <name> ` in the band right
+above the prompt, in `#6ee7dc` on `#29213d`; on default the band shows nothing.
+The engine draws it from the plugin's state, so `/role` shows at once, with no
+status line command and no timer. A survey takes the band while it is up, and
+another plugin's band stays, under the role.
+
+## Status line with claude-hud (optional)
+
+`statusline/` is a small Go program for the `statusLine` command that runs
+[claude-hud](https://github.com/jarrodwatts/claude-hud) without slowing the
+machine down, and reports model, effort and role to the Herdr terminal
+multiplexer's `$model_info` token when it runs inside Herdr.
+
+Why: Claude Code runs the status line after every update and cancels a run
+still going when the next update comes (on Windows with `taskkill /T`, which
+goes through WMI). claude-hud takes most of a second, so with a few sessions,
+and worse with a `refreshInterval`, those cancellations pile up and stall the
+whole machine. This program prints claude-hud's last drawing at once and has a
+detached copy of itself redraw: one per session at a time, at most every 1.5 s,
+outside the process tree a cancellation kills. The drawing is one update
+behind; the role is not affected (it is pinned by the plugin).
 
 1. Install claude-hud.
-2. Copy `statusline/` to `~/.claude/roles-mod/` (the plugin writes the role
-   state the wrapper reads to `~/.claude/roles-mod/state/`).
-3. Point the status line at it in `~/.claude/settings.json`. `refreshInterval`
-   makes a role change show within a second; the wrapper reuses claude-hud's
-   output while nothing else changed, so each tick is cheap.
+2. Build it into `~/.claude/roles-mod/` (the plugin writes the role state it
+   reads for Herdr to `~/.claude/roles-mod/state/`, where it keeps its cache):
+
+   ```
+   cd statusline
+   go build -ldflags="-s -w" -trimpath -o ~/.claude/roles-mod/statusline.exe .
+   ```
+
+3. Point the status line at it in `~/.claude/settings.json`, with no
+   `refreshInterval` (every tick would start a shell and a process per session):
 
 ```json
 "statusLine": {
   "type": "command",
-  "command": "exec \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/roles-mod/statusline.cmd\"",
-  "refreshInterval": 1
+  "command": "exec \"$HOME/.claude/roles-mod/statusline.exe\""
 }
 ```
 
-`statusline.cmd` is the Windows launcher and names `C:\Program Files\nodejs\node.exe`;
-elsewhere, run `node ~/.claude/roles-mod/statusline.mjs` instead.
+Off Windows, name the binary without `.exe`.
 
 ## Develop
 

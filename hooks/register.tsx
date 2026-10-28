@@ -37,6 +37,9 @@ const TOOL = 'roles'
 const NBSP = '\u00a0'
 // The text colour, before the focus inverts it, of a focused card's category and description.
 const MUTED_INK = '#6b7280'
+// The active role's badge, as pi-goal-highlight draws it.
+const ROLE_INK = '#6ee7dc'
+const ROLE_PAPER = '#29213d'
 
 // Module variables start over on a reload; the catalog is cheap to rebuild.
 let catalog: RoleEntry[] | null = null
@@ -109,6 +112,8 @@ async function bodyOf($: EngineInterface, entry: RoleEntry) {
   return parseRoleFile(await $.fs.read(entry.path)).body
 }
 
+// The band above the prompt draws the role from `active`; this file is for the
+// status line command (Herdr) and resumed sessions.
 async function publish($: EngineInterface, role: ActiveRole | null) {
   const sessionId = await $.session.id()
   await $.store.set(`session:${sessionId}`, role?.id ?? null)
@@ -210,8 +215,29 @@ export const register: Register = on => {
     }
     await update($, active, () => role)
     await publish($, role)
+    // An earlier version pinned the role as a status line entry: clear it.
+    $.ui.status(undefined)
 
     return next(e)
+  })
+
+  // The active role above the prompt. Reading `active` here redraws the band as
+  // soon as /role writes it. Default shows nothing, a survey keeps the band, and
+  // another plugin's band stays, under the role.
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const role = await read($, active)
+    if (role === null || e.props.hasSurvey) return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+    const below = await next(e)
+
+    return (
+      <Box flexDirection="column">
+        <Text bold color={ROLE_INK} backgroundColor={ROLE_PAPER}>
+          {`${NBSP}Role: ${role.name}${NBSP}`}
+        </Text>
+        {below}
+      </Box>
+    )
   })
 
   on('command.run', { command: 'role' }, async ($, e) => {

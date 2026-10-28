@@ -1,7 +1,7 @@
 {
   "name": "roles",
-  "version": "0.1.0",
-  "description": "Professional roles for Claude Code: a searchable /role picker, the role in every prompt, --role for subagents, and a HUD badge",
+  "version": "0.2.0",
+  "description": "Professional roles for Claude Code: a searchable /role picker, the role in every prompt, --role for subagents, and the active role above the prompt",
   "author": { "name": "rodrigojager", "url": "https://github.com/rodrigojager" },
   "homepage": "https://github.com/rodrigojager/claude-roles",
   "repository": "https://github.com/rodrigojager/claude-roles",
